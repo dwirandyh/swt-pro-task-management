@@ -16,7 +16,7 @@ struct TaskListView: View {
                 SearchBar(text: $viewModel.searchText)
                 
                 List {
-                    ForEach(viewModel.filteredTasks) { task in
+                    ForEach(viewModel.tasks) { task in
                         TaskRow(task: task, onUpdate: { updatedTask in
                             viewModel.updateTask(task: updatedTask)
                         }, onDelete: {

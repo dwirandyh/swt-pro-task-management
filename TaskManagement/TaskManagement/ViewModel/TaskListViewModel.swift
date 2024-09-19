@@ -10,7 +10,11 @@ import Foundation
 
 class TaskListViewModel: ObservableObject {
     @Published private(set) var tasks: [TaskEntity] = []
-    @Published var searchText: String = ""
+    @Published var searchText: String = "" {
+        didSet {
+            searchTasks()
+        }
+    }
     @Published var isAddTaskShown: Bool = false
 
     private let taskRepository: TaskRepository
@@ -39,12 +43,13 @@ class TaskListViewModel: ObservableObject {
         taskRepository.deleteTask(task)
         fetchTasks()
     }
-
-    var filteredTasks: [TaskEntity] {
+    
+    func searchTasks() {
         if searchText.isEmpty {
-            return tasks
-        } else {
-            return tasks.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
+            fetchTasks()
+        }
+        else {
+            tasks = taskRepository.searchTasks(byTitle: searchText)
         }
     }
 }

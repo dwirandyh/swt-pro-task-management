@@ -44,8 +44,19 @@ class LocalTaskRepository: TaskRepository {
         context.delete(taskEntity)
         saveContext()
     }
+    
+    func searchTasks(byTitle title: String) -> [TaskEntity] {
+        let request: NSFetchRequest<TaskModel> = TaskModel.fetchRequest()
+        request.predicate = NSPredicate(format: "%K CONTAINS[cd] %@", #keyPath(TaskModel.title), title)
+        do {
+            return try context.fetch(request).map { TaskEntity(from: $0) }
+        } catch {
+            print("Failed to search tasks: \(error)")
+            return []
+        }
+    }
 
-    func fetchTaskModel(byId id: UUID) -> TaskModel? {
+    private func fetchTaskModel(byId id: UUID) -> TaskModel? {
         let request: NSFetchRequest<TaskModel> = TaskModel.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
         do {

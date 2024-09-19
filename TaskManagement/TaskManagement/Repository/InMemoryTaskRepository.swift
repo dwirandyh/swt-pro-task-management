@@ -27,4 +27,8 @@ class InMemoryTaskRepository: TaskRepository {
     func deleteTask(_ task: TaskEntity) {
         tasks.removeAll { $0.id == task.id }
     }
+    
+    func searchTasks(byTitle title: String) -> [TaskEntity] {
+        return tasks.filter { $0.title.contains(title) }
+    }
 }
