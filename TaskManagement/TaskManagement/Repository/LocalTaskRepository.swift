@@ -50,9 +50,23 @@ class LocalTaskRepository: TaskRepository {
         saveContext()
     }
     
-    func searchTasks(byTitle title: String) -> [TaskEntity] {
+    func searchTasks(byTitle title: String, filter: FilterOption) -> [TaskEntity] {
         let request: NSFetchRequest<TaskModel> = TaskModel.fetchRequest()
-        request.predicate = NSPredicate(format: "%K CONTAINS[cd] %@", #keyPath(TaskModel.title), title)
+        
+        var predicates: [NSPredicate] = []
+
+        if !title.isEmpty {
+            predicates.append(NSPredicate(format: "%K CONTAINS[cd] %@", #keyPath(TaskModel.title), title))
+        }
+        
+        if let filterPredicate = createFilterPredicate(filter) {
+            predicates.append(filterPredicate)
+        }
+        
+        if !predicates.isEmpty {
+            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
+        }
+        
         do {
             return try persistentContainer.viewContext.fetch(request).map { TaskEntity(from: $0) }
         } catch {
@@ -60,7 +74,18 @@ class LocalTaskRepository: TaskRepository {
             return []
         }
     }
-
+    
+    private func createFilterPredicate(_ option: FilterOption) -> NSPredicate? {
+        switch option {
+        case .all:
+            return nil
+        case .completed:
+            return NSPredicate(format: "%K == %@", #keyPath(TaskModel.isCompleted), NSNumber(value: true))
+        case .notCompleted:
+            return NSPredicate(format: "%K == %@", #keyPath(TaskModel.isCompleted), NSNumber(value: false))
+        }
+    }
+    
     private func fetchTaskModel(byId id: UUID) -> TaskModel? {
         let request: NSFetchRequest<TaskModel> = TaskModel.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)

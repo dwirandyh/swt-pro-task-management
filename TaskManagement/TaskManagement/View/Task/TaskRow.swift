@@ -27,9 +27,11 @@ struct TaskRow: View {
                 Text(task.title)
             }
             .onChange(of: isCompleted) { newValue in
-                var updatedTaskEntity = task
-                updatedTaskEntity.isCompleted = newValue
-                onUpdate(updatedTaskEntity)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    var updatedTaskEntity = task
+                    updatedTaskEntity.isCompleted = newValue
+                    onUpdate(updatedTaskEntity)
+                }
             }
             Spacer()
             Button(action: onDelete) {

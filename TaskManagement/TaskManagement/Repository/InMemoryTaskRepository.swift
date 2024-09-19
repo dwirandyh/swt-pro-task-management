@@ -8,6 +8,7 @@
 import Foundation
 
 class InMemoryTaskRepository: TaskRepository {
+    
     private var tasks: [TaskEntity] = []
 
     func fetchTasks() -> [TaskEntity] {
@@ -28,7 +29,7 @@ class InMemoryTaskRepository: TaskRepository {
         tasks.removeAll { $0.id == task.id }
     }
     
-    func searchTasks(byTitle title: String) -> [TaskEntity] {
+    func searchTasks(byTitle title: String, filter: FilterOption) -> [TaskEntity] {
         return tasks.filter { $0.title.contains(title) }
     }
 }

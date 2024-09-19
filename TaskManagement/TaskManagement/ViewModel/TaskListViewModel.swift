@@ -8,11 +8,22 @@
 import Combine
 import Foundation
 
+enum FilterOption {
+    case all
+    case completed
+    case notCompleted
+}
+
 class TaskListViewModel: ObservableObject {
     @Published private(set) var tasks: [TaskEntity] = []
     @Published var searchText: String = "" {
         didSet {
-            searchTasks()
+            filterAndSearchTasks()
+        }
+    }
+    @Published var filterOption: FilterOption = .all {
+        didSet {
+            filterAndSearchTasks()
         }
     }
     @Published var isAddTaskShown: Bool = false
@@ -21,35 +32,26 @@ class TaskListViewModel: ObservableObject {
     
     init(taskRepository: TaskRepository) {
         self.taskRepository = taskRepository
-        fetchTasks()
-    }
-
-    func fetchTasks() {
-        tasks = taskRepository.fetchTasks()
+        filterAndSearchTasks()
     }
 
     func addTask(title: String) {
         let newTask = TaskEntity(id: UUID(), title: title, isCompleted: false)
         taskRepository.addTask(newTask)
-        fetchTasks()
+        filterAndSearchTasks()
     }
 
     func updateTask(task: TaskEntity) {
         taskRepository.updateTask(task)
-        fetchTasks()
+        filterAndSearchTasks()
     }
 
     func deleteTask(task: TaskEntity) {
         taskRepository.deleteTask(task)
-        fetchTasks()
+        filterAndSearchTasks()
     }
     
-    func searchTasks() {
-        if searchText.isEmpty {
-            fetchTasks()
-        }
-        else {
-            tasks = taskRepository.searchTasks(byTitle: searchText)
-        }
+    func filterAndSearchTasks() {
+        tasks = taskRepository.searchTasks(byTitle: searchText, filter: filterOption)
     }
 }

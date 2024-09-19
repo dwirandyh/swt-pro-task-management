@@ -13,6 +13,14 @@ struct TaskListView: View {
     var body: some View {
         NavigationView {
             VStack {
+                Picker("Filter", selection: $viewModel.filterOption) {
+                    Text("All").tag(FilterOption.all)
+                    Text("Completed").tag(FilterOption.completed)
+                    Text("Not Completed").tag(FilterOption.notCompleted)
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                .padding()
+                
                 SearchBar(text: $viewModel.searchText)
                 
                 List {

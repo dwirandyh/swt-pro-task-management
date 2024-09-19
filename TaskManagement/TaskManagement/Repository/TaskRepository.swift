@@ -12,6 +12,6 @@ protocol TaskRepository {
     func addTask(_ task: TaskEntity)
     func updateTask(_ task: TaskEntity)
     func deleteTask(_ task: TaskEntity)
-    func searchTasks(byTitle title: String) -> [TaskEntity]
+    func searchTasks(byTitle title: String, filter: FilterOption) -> [TaskEntity]
 }
 
