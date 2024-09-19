@@ -9,16 +9,21 @@ import Foundation
 import CoreData
 
 class LocalTaskRepository: TaskRepository {
-    private var context: NSManagedObjectContext
+    
+    let persistentContainer = NSPersistentContainer(name: "TaskDB")
 
-    init(context: NSManagedObjectContext) {
-        self.context = context
+    init() {
+        persistentContainer.loadPersistentStores { _, error in
+            if let error {
+                assertionFailure("Failed to load persistent stores: \(error)")
+            }
+        }
     }
 
     func fetchTasks() -> [TaskEntity] {
         let request: NSFetchRequest<TaskModel> = TaskModel.fetchRequest()
         do {
-            return try context.fetch(request).map { TaskEntity(from: $0) }
+            return try persistentContainer.viewContext.fetch(request).map { TaskEntity(from: $0) }
         } catch {
             print("Failed to fetch tasks: \(error)")
             return []
@@ -26,7 +31,7 @@ class LocalTaskRepository: TaskRepository {
     }
 
     func addTask(_ task: TaskEntity) {
-        let newTaskEntity = TaskModel(context: context)
+        let newTaskEntity = TaskModel(context: persistentContainer.viewContext)
         newTaskEntity.id = task.id
         newTaskEntity.title = task.title
         newTaskEntity.isCompleted = false
@@ -41,7 +46,7 @@ class LocalTaskRepository: TaskRepository {
 
     func deleteTask(_ task: TaskEntity) {
         guard let taskEntity = fetchTaskModel(byId: task.id) else { return }
-        context.delete(taskEntity)
+        persistentContainer.viewContext.delete(taskEntity)
         saveContext()
     }
     
@@ -49,7 +54,7 @@ class LocalTaskRepository: TaskRepository {
         let request: NSFetchRequest<TaskModel> = TaskModel.fetchRequest()
         request.predicate = NSPredicate(format: "%K CONTAINS[cd] %@", #keyPath(TaskModel.title), title)
         do {
-            return try context.fetch(request).map { TaskEntity(from: $0) }
+            return try persistentContainer.viewContext.fetch(request).map { TaskEntity(from: $0) }
         } catch {
             print("Failed to search tasks: \(error)")
             return []
@@ -60,7 +65,7 @@ class LocalTaskRepository: TaskRepository {
         let request: NSFetchRequest<TaskModel> = TaskModel.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
         do {
-            let results = try context.fetch(request)
+            let results = try persistentContainer.viewContext.fetch(request)
             return results.first
         } catch {
             print("Failed to fetch task by ID: \(error)")
@@ -69,9 +74,9 @@ class LocalTaskRepository: TaskRepository {
     }
 
     private func saveContext() {
-        if context.hasChanges {
+        if persistentContainer.viewContext.hasChanges {
             do {
-                try context.save()
+                try persistentContainer.viewContext.save()
             } catch {
                 print("Failed to save context: \(error)")
             }
