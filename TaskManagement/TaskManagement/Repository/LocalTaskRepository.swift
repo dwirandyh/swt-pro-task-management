@@ -10,16 +10,18 @@ import CoreData
 
 class LocalTaskRepository: TaskRepository {
     
-    let persistentContainer = NSPersistentContainer(name: "TaskDB")
+    private let persistentContainer: NSPersistentContainer
+    private let syncManager: SyncManager
 
-    init() {
-        persistentContainer.loadPersistentStores { _, error in
-            if let error {
-                assertionFailure("Failed to load persistent stores: \(error)")
-            }
-        }
+    init(persistentContainer: NSPersistentContainer, syncManager: SyncManager) {
+        self.persistentContainer = persistentContainer
+        self.syncManager = syncManager
     }
-
+    
+    func syncData() async throws {
+        try await syncManager.syncFirestoreToCoreData()
+    }
+    
     func fetchTasks() -> [TaskEntity] {
         let request: NSFetchRequest<TaskModel> = TaskModel.fetchRequest()
         do {
@@ -35,17 +37,28 @@ class LocalTaskRepository: TaskRepository {
         newTaskEntity.id = task.id
         newTaskEntity.title = task.title
         newTaskEntity.isCompleted = false
+        newTaskEntity.lastModified = Date()
+        
+        syncManager.savePendingSync(taskId: task.id, actionType: "create")
+        
         saveContext()
     }
 
     func updateTask(_ task: TaskEntity) {
         guard let taskEntity = fetchTaskModel(byId: task.id) else { return }
         taskEntity.isCompleted = task.isCompleted
+        taskEntity.lastModified = Date()
+        
+        syncManager.savePendingSync(taskId: task.id, actionType: "update")
+        
         saveContext()
     }
 
     func deleteTask(_ task: TaskEntity) {
         guard let taskEntity = fetchTaskModel(byId: task.id) else { return }
+        
+        syncManager.savePendingSync(taskId: task.id, actionType: "delete")
+        
         persistentContainer.viewContext.delete(taskEntity)
         saveContext()
     }

@@ -34,9 +34,21 @@ class TaskListViewModel: ObservableObject {
         self.taskRepository = taskRepository
         filterAndSearchTasks()
     }
+    
+    func syncData() async throws {
+        try await taskRepository.syncData()
+        await MainActor.run {
+            filterAndSearchTasks()
+        }
+    }
 
     func addTask(title: String) {
-        let newTask = TaskEntity(id: UUID(), title: title, isCompleted: false)
+        let newTask = TaskEntity(
+            id: UUID(),
+            title: title,
+            isCompleted: false,
+            lastModified: Date()
+        )
         taskRepository.addTask(newTask)
         filterAndSearchTasks()
     }

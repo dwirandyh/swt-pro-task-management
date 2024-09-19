@@ -8,6 +8,7 @@
 import Foundation
 
 protocol TaskRepository {
+    func syncData() async throws
     func fetchTasks() -> [TaskEntity]
     func addTask(_ task: TaskEntity)
     func updateTask(_ task: TaskEntity)

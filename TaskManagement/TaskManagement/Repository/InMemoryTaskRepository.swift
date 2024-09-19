@@ -32,4 +32,8 @@ class InMemoryTaskRepository: TaskRepository {
     func searchTasks(byTitle title: String, filter: FilterOption) -> [TaskEntity] {
         return tasks.filter { $0.title.contains(title) }
     }
+    
+    func syncData() async throws {
+        tasks = []
+    }
 }

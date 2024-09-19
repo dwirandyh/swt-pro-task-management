@@ -44,6 +44,14 @@ struct TaskListView: View {
                     viewModel.addTask(title: title)
                 }
             }
+            .task {
+                do {
+                    try await viewModel.syncData()
+                }
+                catch {
+                    print("Failed to sync data \(error)")
+                }
+            }
         }
     }
 }
