@@ -8,13 +8,13 @@
 import SwiftUI
 
 struct TaskRow: View {
-    var task: TaskModel
-    var onUpdate: (TaskModel) -> Void
+    var task: TaskEntity
+    var onUpdate: (TaskEntity) -> Void
     var onDelete: () -> Void
 
     @State private var isCompleted: Bool
 
-    init(task: TaskModel, onUpdate: @escaping (TaskModel) -> Void, onDelete: @escaping () -> Void) {
+    init(task: TaskEntity, onUpdate: @escaping (TaskEntity) -> Void, onDelete: @escaping () -> Void) {
         self.task = task
         self.onUpdate = onUpdate
         self.onDelete = onDelete
@@ -27,9 +27,9 @@ struct TaskRow: View {
                 Text(task.title)
             }
             .onChange(of: isCompleted) { newValue in
-                var updatedTask = task
-                updatedTask.isCompleted = newValue
-                onUpdate(updatedTask)
+                var updatedTaskEntity = task
+                updatedTaskEntity.isCompleted = newValue
+                onUpdate(updatedTaskEntity)
             }
             Spacer()
             Button(action: onDelete) {

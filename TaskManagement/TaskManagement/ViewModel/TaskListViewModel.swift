@@ -9,13 +9,13 @@ import Combine
 import Foundation
 
 class TaskListViewModel: ObservableObject {
-    @Published private(set) var tasks: [TaskModel] = []
+    @Published private(set) var tasks: [TaskEntity] = []
     @Published var searchText: String = ""
     @Published var isAddTaskShown: Bool = false
 
     private let taskRepository: TaskRepository
     
-    init(taskRepository: TaskRepository = InMemoryTaskRepository()) {
+    init(taskRepository: TaskRepository) {
         self.taskRepository = taskRepository
         fetchTasks()
     }
@@ -25,22 +25,22 @@ class TaskListViewModel: ObservableObject {
     }
 
     func addTask(title: String) {
-        let newTask = TaskModel(id: UUID(), title: title, isCompleted: false)
+        let newTask = TaskEntity(id: UUID(), title: title, isCompleted: false)
         taskRepository.addTask(newTask)
         fetchTasks()
     }
 
-    func updateTask(task: TaskModel) {
+    func updateTask(task: TaskEntity) {
         taskRepository.updateTask(task)
         fetchTasks()
     }
 
-    func deleteTask(task: TaskModel) {
+    func deleteTask(task: TaskEntity) {
         taskRepository.deleteTask(task)
         fetchTasks()
     }
 
-    var filteredTasks: [TaskModel] {
+    var filteredTasks: [TaskEntity] {
         if searchText.isEmpty {
             return tasks
         } else {

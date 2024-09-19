@@ -42,5 +42,5 @@ struct TaskListView: View {
 
 
 #Preview {
-    TaskListView(viewModel: TaskListViewModel())
+    TaskListView(viewModel: TaskListViewModel(taskRepository: InMemoryTaskRepository()))
 }
