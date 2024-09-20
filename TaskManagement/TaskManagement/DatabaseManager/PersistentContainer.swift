@@ -71,9 +71,21 @@ class PersistenceContainer {
         saveContext()
     }
     
+    func update<T: NSManagedObject>(_ object: T) async {
+        await context.perform {
+            self.saveContext()
+        }
+    }
+    
     func delete<T: NSManagedObject>(_ object: T) {
         let context = persistentContainer.viewContext
         context.delete(object)
         saveContext()
+    }
+    
+    func delete<T: NSManagedObject>(_ object: T) async {
+        await self.context.perform {
+            self.delete(object)
+        }
     }
 }
