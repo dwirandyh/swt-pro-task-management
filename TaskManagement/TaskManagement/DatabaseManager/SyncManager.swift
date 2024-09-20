@@ -14,8 +14,15 @@ class SyncManager {
     let firestore = Firestore.firestore()
     let context: NSManagedObjectContext
     
+    static var shared: SyncManager?
+    
     init(context: NSManagedObjectContext) {
         self.context = context
+        
+        
+        if SyncManager.shared == nil {
+            SyncManager.shared = self
+        }
     }
     
     // Sync tasks from Firestore to Core Data

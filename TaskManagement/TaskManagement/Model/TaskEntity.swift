@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct TaskEntity: Identifiable, Equatable {
+struct TaskEntity: Identifiable {
     let id: UUID
     var title: String
     var isCompleted: Bool

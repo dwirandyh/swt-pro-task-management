@@ -14,6 +14,7 @@ enum FilterOption {
     case notCompleted
 }
 
+@MainActor
 class TaskListViewModel: ObservableObject {
     @Published private(set) var tasks: [TaskEntity] = []
     @Published var searchText: String = "" {
@@ -37,9 +38,7 @@ class TaskListViewModel: ObservableObject {
     
     func syncData() async throws {
         try await taskRepository.syncData()
-        await MainActor.run {
-            filterAndSearchTasks()
-        }
+        filterAndSearchTasks()
     }
 
     func addTask(title: String) {

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct TaskListView: View {
-    @ObservedObject var viewModel: TaskListViewModel
+    @StateObject var viewModel: TaskListViewModel
 
     var body: some View {
         NavigationView {
