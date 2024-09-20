@@ -10,10 +10,10 @@ import CoreData
 
 class LocalTaskRepository: TaskRepository {
     
-    private let persistentContainer: NSPersistentContainer
+    private let persistentContainer: PersistenceContainer
     private let syncManager: SyncManager
 
-    init(persistentContainer: NSPersistentContainer, syncManager: SyncManager) {
+    init(persistentContainer: PersistenceContainer, syncManager: SyncManager) {
         self.persistentContainer = persistentContainer
         self.syncManager = syncManager
     }
@@ -23,17 +23,11 @@ class LocalTaskRepository: TaskRepository {
     }
     
     func fetchTasks() -> [TaskEntity] {
-        let request: NSFetchRequest<TaskModel> = TaskModel.fetchRequest()
-        do {
-            return try persistentContainer.viewContext.fetch(request).map { TaskEntity(from: $0) }
-        } catch {
-            print("Failed to fetch tasks: \(error)")
-            return []
-        }
+        return persistentContainer.fetch(TaskModel.self).map { TaskEntity(from: $0) }
     }
 
     func addTask(_ task: TaskEntity) {
-        let newTaskEntity = TaskModel(context: persistentContainer.viewContext)
+        let newTaskEntity = persistentContainer.create(TaskModel.self)
         newTaskEntity.id = task.id
         newTaskEntity.title = task.title
         newTaskEntity.isCompleted = false
@@ -41,26 +35,25 @@ class LocalTaskRepository: TaskRepository {
         
         syncManager.savePendingSync(taskId: task.id, actionType: "create")
         
-        saveContext()
+        persistentContainer.saveContext()
     }
 
     func updateTask(_ task: TaskEntity) {
-        guard let taskEntity = fetchTaskModel(byId: task.id) else { return }
-        taskEntity.isCompleted = task.isCompleted
-        taskEntity.lastModified = Date()
+        guard let taskModel = fetchTaskModel(byId: task.id) else { return }
+        taskModel.isCompleted = task.isCompleted
+        taskModel.lastModified = Date()
         
         syncManager.savePendingSync(taskId: task.id, actionType: "update")
         
-        saveContext()
+        persistentContainer.update(taskModel)
     }
 
     func deleteTask(_ task: TaskEntity) {
-        guard let taskEntity = fetchTaskModel(byId: task.id) else { return }
+        guard let taskModel = fetchTaskModel(byId: task.id) else { return }
         
         syncManager.savePendingSync(taskId: task.id, actionType: "delete")
         
-        persistentContainer.viewContext.delete(taskEntity)
-        saveContext()
+        persistentContainer.delete(taskModel)
     }
     
     func searchTasks(byTitle title: String, filter: FilterOption) -> [TaskEntity] {
@@ -76,16 +69,7 @@ class LocalTaskRepository: TaskRepository {
             predicates.append(filterPredicate)
         }
         
-        if !predicates.isEmpty {
-            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
-        }
-        
-        do {
-            return try persistentContainer.viewContext.fetch(request).map { TaskEntity(from: $0) }
-        } catch {
-            print("Failed to search tasks: \(error)")
-            return []
-        }
+        return persistentContainer.fetch(TaskModel.self, predicate: NSCompoundPredicate(andPredicateWithSubpredicates: predicates)).map { TaskEntity(from: $0) }
     }
     
     private func createFilterPredicate(_ option: FilterOption) -> NSPredicate? {
@@ -100,24 +84,8 @@ class LocalTaskRepository: TaskRepository {
     }
     
     private func fetchTaskModel(byId id: UUID) -> TaskModel? {
-        let request: NSFetchRequest<TaskModel> = TaskModel.fetchRequest()
-        request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
-        do {
-            let results = try persistentContainer.viewContext.fetch(request)
-            return results.first
-        } catch {
-            print("Failed to fetch task by ID: \(error)")
-            return nil
-        }
-    }
-
-    private func saveContext() {
-        if persistentContainer.viewContext.hasChanges {
-            do {
-                try persistentContainer.viewContext.save()
-            } catch {
-                print("Failed to save context: \(error)")
-            }
-        }
+        let predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        
+        return persistentContainer.fetch(TaskModel.self, predicate: predicate).first
     }
 }

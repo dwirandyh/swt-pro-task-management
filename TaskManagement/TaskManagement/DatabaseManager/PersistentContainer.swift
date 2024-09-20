@@ -23,7 +23,10 @@ class PersistenceContainer {
         return container
     }()
     
-    // MARK: - Core Data Saving support
+    
+    var context: NSManagedObjectContext {
+        return persistentContainer.viewContext
+    }
     
     func saveContext() {
         let context = persistentContainer.viewContext
@@ -37,15 +40,17 @@ class PersistenceContainer {
         }
     }
     
-    // MARK: - CRUD Operations
-    
     func create<T: NSManagedObject>(_ type: T.Type) -> T {
-        let context = persistentContainer.viewContext
-        let entityName = String(describing: type)
-        guard let entity = NSEntityDescription.entity(forEntityName: entityName, in: context) else {
-            fatalError("Failed to create entity of type \(entityName)")
+        return T(context: context)
+    }
+    
+    func fetch<T: NSManagedObject>(_ type: T.Type, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil) async throws -> [T] {
+        return try await context.perform {
+            let request = NSFetchRequest<T>(entityName: String(describing: type))
+            request.predicate = predicate
+            request.sortDescriptors = sortDescriptors
+            return try self.context.fetch(request)
         }
-        return T(entity: entity, insertInto: context)
     }
     
     func fetch<T: NSManagedObject>(_ type: T.Type, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil) -> [T] {

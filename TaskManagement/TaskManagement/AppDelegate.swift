@@ -14,6 +14,21 @@ class AppDelegate: NSObject, UIApplicationDelegate {
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         FirebaseApp.configure()
         
+        setupNetworkSync()
+        
         return true
+    }
+    
+    private func setupNetworkSync() {
+        let networkMonitor = NetworkMonitor()
+        networkMonitor.setOnNetworkStatusChanged { isConnected in
+            if isConnected {
+                Task {
+                    try await SyncManager.shared?.syncFirestoreToCoreData()
+                }
+            }
+        }
+        
+        networkMonitor.startMonitoring()
     }
 }

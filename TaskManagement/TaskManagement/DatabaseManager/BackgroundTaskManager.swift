@@ -20,7 +20,7 @@ class BackgroundTaskManager: ObservableObject {
         if backgroundTask != .invalid {
             Task(priority: .background) {
                 do {
-                    try await SyncManager.shared?.syncFirestoreToCoreData()
+                    try await SyncManager.shared?.pushCoreDataToFirestore()
                 } catch {
                     print("Failed to sync Firestore to CoreData: \(error.localizedDescription)")
                 }

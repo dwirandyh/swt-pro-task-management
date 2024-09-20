@@ -15,16 +15,7 @@ struct TaskManagementApp: App {
     @Environment(\.scenePhase) var scenePhase
     @ObservedObject var backgroundTaskManager: BackgroundTaskManager
     
-    let persistentContainer: NSPersistentContainer = NSPersistentContainer(name: "TaskDB")
-    
     init() {
-        persistentContainer.loadPersistentStores { _, error in
-            if let error {
-                print("Failed to load persistent stores: \(error)")
-            }
-        }
-        
-
         backgroundTaskManager = BackgroundTaskManager()
     }
     
@@ -33,8 +24,8 @@ struct TaskManagementApp: App {
             TaskListView(
                 viewModel: TaskListViewModel(
                     taskRepository: LocalTaskRepository(
-                        persistentContainer: persistentContainer,
-                        syncManager: SyncManager(context: persistentContainer.viewContext)
+                        persistentContainer: PersistenceContainer.shared,
+                        syncManager: SyncManager(persistentContainer: PersistenceContainer.shared)
                     )
                 )
             )

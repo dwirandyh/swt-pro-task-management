@@ -12,12 +12,12 @@ import FirebaseFirestore
 class SyncManager {
     
     let firestore = Firestore.firestore()
-    let context: NSManagedObjectContext
+    let persistentContainer: PersistenceContainer
     
     static var shared: SyncManager?
     
-    init(context: NSManagedObjectContext) {
-        self.context = context
+    init(persistentContainer: PersistenceContainer) {
+        self.persistentContainer = persistentContainer
         
         
         if SyncManager.shared == nil {
@@ -25,7 +25,6 @@ class SyncManager {
         }
     }
     
-    // Sync tasks from Firestore to Core Data
     func syncFirestoreToCoreData() async throws {
         try await pushCoreDataToFirestore()
         
@@ -50,13 +49,9 @@ class SyncManager {
         }
     }
     
-    // Push local changes from Core Data to Firestore
     func pushCoreDataToFirestore() async throws {
         do {
-            let pendingSyncs = try await context.perform {
-                let fetchRequest: NSFetchRequest<PendingSyncModel> = PendingSyncModel.fetchRequest()
-                return try self.context.fetch(fetchRequest)
-            }
+            let pendingSyncs = try await persistentContainer.fetch(PendingSyncModel.self)
             
             for pendingSync in pendingSyncs {
                 if let taskId = pendingSync.taskId {
@@ -74,40 +69,33 @@ class SyncManager {
     }
     
     private func fetchTaskModel(byId id: UUID) -> TaskModel? {
-        let request: NSFetchRequest<TaskModel> = TaskModel.fetchRequest()
-        request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
-        do {
-            let results = try context.fetch(request)
-            return results.first
-        } catch {
-            print("Failed to fetch task by ID: \(error)")
-            return nil
-        }
+        let tasks = persistentContainer.fetch(
+            TaskModel.self,
+            predicate: NSPredicate(format: "id == %@", id as CVarArg)
+        )
+        return tasks.first
     }
     
-    // Update Core Data task with Firestore data
     private func updateCoreDataTask(from firestoreData: [String: Any], for localTask: TaskModel) {
         localTask.title = firestoreData["title"] as? String
         localTask.isCompleted = firestoreData["isCompleted"] as? Bool ?? false
         localTask.lastModified = (firestoreData["lastModified"] as? Timestamp)?.dateValue()
         
-        saveContext()
+        persistentContainer.saveContext()
     }
     
-    // Create a new Core Data task from Firestore data
     private func createNewCoreDataTask(from document: QueryDocumentSnapshot) {
         let firestoreData = document.data()
         
-        let newTask = TaskModel(context: context)
+        let newTask = persistentContainer.create(TaskModel.self)
         newTask.id = UUID(uuidString: document.documentID) ?? UUID()
         newTask.title = firestoreData["title"] as? String
         newTask.isCompleted = firestoreData["isCompleted"] as? Bool ?? false
         newTask.lastModified = (firestoreData["lastModified"] as? Timestamp)?.dateValue()
         
-        saveContext()
+        persistentContainer.saveContext()
     }
     
-    // Push Core Data task to Firestore
     private func pushTaskToFirestore(task: TaskModel) async throws {
         guard let taskId = task.id else { return }
         let taskData: [String: Any] = [
@@ -121,50 +109,31 @@ class SyncManager {
         clearPendingSync(taskId: taskId)
     }
     
-    // Delete deleted pending task to Firestore
     private func deleteTaskFromFirestore(taskId: UUID) async throws {
         try await firestore.collection("tasks").document(taskId.uuidString).delete()
         
         clearPendingSync(taskId: taskId)
     }
     
-    // Save pending sync action
     func savePendingSync(taskId: UUID, actionType: String) {
-        let fetchRequest: NSFetchRequest<PendingSyncModel> = PendingSyncModel.fetchRequest()
-        fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
+        let predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
             NSPredicate(format: "%K == %@", #keyPath(PendingSyncModel.taskId), taskId as CVarArg),
             NSPredicate(format: "%K == %@", #keyPath(PendingSyncModel.actionType), actionType)
         ])
         
-        if let result = try? context.fetch(fetchRequest), result.isEmpty {
-            let pendingSync = PendingSyncModel(context: context)
+        let result = persistentContainer.fetch(PendingSyncModel.self, predicate: predicate)
+        if result.isEmpty {
+            let pendingSync = persistentContainer.create(PendingSyncModel.self)
             pendingSync.taskId = taskId
             pendingSync.actionType = actionType
-            
-            saveContext()
         }
     }
     
-    // Clear pending sync action
     private func clearPendingSync(taskId: UUID) {
-        let fetchRequest: NSFetchRequest<PendingSyncModel> = PendingSyncModel.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "%K == %@", #keyPath(PendingSyncModel.taskId), taskId as CVarArg)
-        
-        if let result = try? context.fetch(fetchRequest) {
-            for pendingSync in result {
-                context.delete(pendingSync)
-            }
-            
-            saveContext()
-        }
-    }
-    
-    // Save Core Data context
-    private func saveContext() {
-        do {
-            try context.save()
-        } catch {
-            print("Failed to save Core Data: \(error)")
+        let predicate = NSPredicate(format: "%K == %@", #keyPath(PendingSyncModel.taskId), taskId as CVarArg)
+        let result = persistentContainer.fetch(PendingSyncModel.self, predicate: predicate)
+        for pendingSync in result {
+            persistentContainer.delete(pendingSync)
         }
     }
 }
