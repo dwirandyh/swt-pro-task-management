@@ -9,7 +9,13 @@
 import Foundation
 import FirebaseFirestore
 
-actor SyncManager {
+protocol SyncManagerProtocol {
+    func syncFirestoreToCoreData() async throws
+    func savePendingSync(taskId: UUID, actionType: String) async throws
+    func pushCoreDataToFirestore() async throws
+}
+
+actor SyncManager: SyncManagerProtocol {
     
     private let firestore: Firestore
     private let persistentContainer: PersistenceContainer
@@ -121,21 +127,6 @@ actor SyncManager {
         try await firestore.collection("tasks").document(taskId.uuidString).delete()
         
         try await clearPendingSync(taskId: taskId)
-    }
-    
-    func savePendingSync(taskId: UUID, actionType: String) {
-        let predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
-            NSPredicate(format: "%K == %@", #keyPath(PendingSyncModel.taskId), taskId as CVarArg),
-            NSPredicate(format: "%K == %@", #keyPath(PendingSyncModel.actionType), actionType)
-        ])
-        
-        let result = persistentContainer.fetch(PendingSyncModel.self, predicate: predicate)
-        if result.isEmpty {
-            let pendingSync = persistentContainer.create(PendingSyncModel.self)
-            pendingSync.taskId = taskId
-            pendingSync.actionType = actionType
-            persistentContainer.saveContext()
-        }
     }
     
     func savePendingSync(taskId: UUID, actionType: String) async throws {

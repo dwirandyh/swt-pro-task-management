@@ -30,9 +30,11 @@ class TaskListViewModel: ObservableObject {
     @Published var isAddTaskShown: Bool = false
 
     private let taskRepository: TaskRepository
+    private let logger: Logger
     
     init(taskRepository: TaskRepository) {
         self.taskRepository = taskRepository
+        self.logger = Logger()
         filterAndSearchTasks()
     }
     
@@ -52,7 +54,7 @@ class TaskListViewModel: ObservableObject {
             try await taskRepository.addTask(newTask)
             filterAndSearchTasks()
         } catch {
-            
+            logger.error("Failed to add task \(error)")
         }
     }
 
@@ -61,9 +63,8 @@ class TaskListViewModel: ObservableObject {
             try await taskRepository.updateTask(task)
             filterAndSearchTasks()
         } catch {
-            
+            logger.error("Failed to update task \(error)")
         }
-        
     }
 
     func deleteTask(task: TaskEntity) async {
@@ -71,7 +72,7 @@ class TaskListViewModel: ObservableObject {
             try await taskRepository.deleteTask(task)
             filterAndSearchTasks()
         } catch {
-            
+            logger.error("Failed to delete task \(error)")
         }
     }
     

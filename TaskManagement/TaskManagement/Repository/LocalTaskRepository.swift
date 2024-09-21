@@ -11,9 +11,9 @@ import CoreData
 class LocalTaskRepository: TaskRepository {
     
     private let persistentContainer: PersistenceContainer
-    private let syncManager: SyncManager
+    private let syncManager: SyncManagerProtocol
 
-    init(persistentContainer: PersistenceContainer, syncManager: SyncManager) {
+    init(persistentContainer: PersistenceContainer, syncManager: SyncManagerProtocol) {
         self.persistentContainer = persistentContainer
         self.syncManager = syncManager
     }

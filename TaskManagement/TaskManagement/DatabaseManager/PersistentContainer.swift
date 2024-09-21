@@ -13,23 +13,31 @@ class PersistenceContainer {
     
     let logger: Logger
     
+    private let inMemory: Bool
     
-    private init() {
+    init(inMemory: Bool = false) {
+        self.inMemory = inMemory
         logger = Logger(category: "PersisteceContainer")
     }
     
     lazy var persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: "TaskDB")
         
-        let persistentStoreURL = container.persistentStoreDescriptions.first?.url
-        
-        let storeDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let url = storeDirectory.appendingPathComponent("TaskDB.sqlite")
-        
-        let description = NSPersistentStoreDescription(url: url)
-        description.shouldInferMappingModelAutomatically = true
-        description.shouldMigrateStoreAutomatically = true
-        description.setOption(FileProtectionType.complete as NSObject, forKey: NSPersistentStoreFileProtectionKey)
+        if inMemory {
+            let description = NSPersistentStoreDescription()
+            description.type = NSInMemoryStoreType
+            container.persistentStoreDescriptions = [description]
+        } else {
+            let storeDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+            let url = storeDirectory.appendingPathComponent("TaskDB.sqlite")
+            
+            let description = NSPersistentStoreDescription(url: url)
+            description.shouldInferMappingModelAutomatically = true
+            description.shouldMigrateStoreAutomatically = true
+            description.setOption(FileProtectionType.complete as NSObject, forKey: NSPersistentStoreFileProtectionKey)
+            
+            container.persistentStoreDescriptions = [description]
+        }
         
         container.loadPersistentStores { (storeDescription, error) in
             if let error = error as NSError? {

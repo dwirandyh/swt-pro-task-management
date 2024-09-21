@@ -12,7 +12,7 @@ extension TaskModel {
     convenience init(from entity: TaskEntity, context: NSManagedObjectContext) {
         self.init(context: context)
         id = entity.id
-        title = Encryption.default.encrypt(string: entity.title)
+        title = entity.title
         isCompleted = entity.isCompleted
         lastModified = entity.lastModified ?? Date()
     }
