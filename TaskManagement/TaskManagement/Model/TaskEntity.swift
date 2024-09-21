@@ -17,7 +17,7 @@ struct TaskEntity: Identifiable {
 extension TaskEntity {
     init(from model: TaskModel) {
         self.id = model.id ?? UUID()
-        self.title = model.title ?? ""
+        self.title = Encryption.default.decrypt(string: model.title ?? "") ?? ""
         self.isCompleted = model.isCompleted
         self.lastModified = model.lastModified
     }

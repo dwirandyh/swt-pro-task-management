@@ -27,11 +27,7 @@ class LocalTaskRepository: TaskRepository {
     }
 
     func addTask(_ task: TaskEntity) async throws {
-        let newTaskEntity = persistentContainer.create(TaskModel.self)
-        newTaskEntity.id = task.id
-        newTaskEntity.title = task.title
-        newTaskEntity.isCompleted = false
-        newTaskEntity.lastModified = Date()
+        let newTaskEntity = TaskModel(from: task, context: persistentContainer.context)
         
         persistentContainer.saveContext()
         
@@ -71,7 +67,10 @@ class LocalTaskRepository: TaskRepository {
             predicates.append(filterPredicate)
         }
         
-        return persistentContainer.fetch(TaskModel.self, predicate: NSCompoundPredicate(andPredicateWithSubpredicates: predicates)).map { TaskEntity(from: $0) }
+        return persistentContainer.fetch(
+            TaskModel.self,
+            predicate: NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
+        ).map { TaskEntity(from: $0) }
     }
     
     private func createFilterPredicate(_ option: FilterOption) -> NSPredicate? {
