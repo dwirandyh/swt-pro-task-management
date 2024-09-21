@@ -10,9 +10,9 @@ import Foundation
 protocol TaskRepository {
     func syncData() async throws
     func fetchTasks() -> [TaskEntity]
-    func addTask(_ task: TaskEntity)
-    func updateTask(_ task: TaskEntity)
-    func deleteTask(_ task: TaskEntity)
+    func addTask(_ task: TaskEntity) async throws
+    func updateTask(_ task: TaskEntity) async throws
+    func deleteTask(_ task: TaskEntity) async throws
     func searchTasks(byTitle title: String, filter: FilterOption) -> [TaskEntity]
 }
 

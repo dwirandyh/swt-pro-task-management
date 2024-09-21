@@ -5,31 +5,46 @@
 //  Created by Dwi Randy H on 19/09/24.
 //
 
-import CoreData
+@preconcurrency import CoreData
 
 class PersistenceContainer {
         
     static let shared = PersistenceContainer()
     
-    private init() {}
+    let logger: Logger
+    
+    
+    private init() {
+        logger = Logger(category: "PersisteceContainer")
+    }
     
     lazy var persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: "TaskDB")
+        
+        let persistentStoreURL = container.persistentStoreDescriptions.first?.url
+        
+        let storeDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let url = storeDirectory.appendingPathComponent("TaskDB.sqlite")
+        
+        let description = NSPersistentStoreDescription(url: url)
+        description.shouldInferMappingModelAutomatically = true
+        description.shouldMigrateStoreAutomatically = true
+        description.setOption(FileProtectionType.complete as NSObject, forKey: NSPersistentStoreFileProtectionKey)
+        
         container.loadPersistentStores { (storeDescription, error) in
             if let error = error as NSError? {
                 assertionFailure("Unresolved error \(error), \(error.userInfo)")
             }
         }
+        
         return container
     }()
     
-    
-    var context: NSManagedObjectContext {
+    lazy var context: NSManagedObjectContext = {
         return persistentContainer.viewContext
-    }
+    }()
     
     func saveContext() {
-        let context = persistentContainer.viewContext
         if context.hasChanges {
             do {
                 try context.save()
@@ -44,6 +59,16 @@ class PersistenceContainer {
         return T(context: context)
     }
     
+    @discardableResult
+    func create<T: NSManagedObject>(_ type: T.Type, updatedObject: @escaping (T) -> Void) async -> T {
+        return await context.perform {
+            let object = T(context: self.context)
+            updatedObject(object)
+            self.saveContext()
+            return object
+        }
+    }
+    
     func fetch<T: NSManagedObject>(_ type: T.Type, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil) async throws -> [T] {
         return try await context.perform {
             let request = NSFetchRequest<T>(entityName: String(describing: type))
@@ -54,7 +79,7 @@ class PersistenceContainer {
     }
     
     func fetch<T: NSManagedObject>(_ type: T.Type, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil) -> [T] {
-        let context = persistentContainer.viewContext
+        let context = context
         let request = NSFetchRequest<T>(entityName: String(describing: type))
         request.predicate = predicate
         request.sortDescriptors = sortDescriptors
@@ -62,7 +87,7 @@ class PersistenceContainer {
         do {
             return try context.fetch(request)
         } catch {
-            print("Failed to fetch \(type): \(error)")
+            logger.error("Failed to fetch \(type): \(error)")
             return []
         }
     }
@@ -78,7 +103,7 @@ class PersistenceContainer {
     }
     
     func delete<T: NSManagedObject>(_ object: T) {
-        let context = persistentContainer.viewContext
+        let context = context
         context.delete(object)
         saveContext()
     }

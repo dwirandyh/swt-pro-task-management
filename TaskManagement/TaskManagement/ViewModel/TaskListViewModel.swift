@@ -41,25 +41,38 @@ class TaskListViewModel: ObservableObject {
         filterAndSearchTasks()
     }
 
-    func addTask(title: String) {
-        let newTask = TaskEntity(
-            id: UUID(),
-            title: title,
-            isCompleted: false,
-            lastModified: Date()
-        )
-        taskRepository.addTask(newTask)
-        filterAndSearchTasks()
+    func addTask(title: String) async {
+        do {
+            let newTask = TaskEntity(
+                id: UUID(),
+                title: title,
+                isCompleted: false,
+                lastModified: Date()
+            )
+            try await taskRepository.addTask(newTask)
+            filterAndSearchTasks()
+        } catch {
+            
+        }
     }
 
-    func updateTask(task: TaskEntity) {
-        taskRepository.updateTask(task)
-        filterAndSearchTasks()
+    func updateTask(task: TaskEntity) async {
+        do {
+            try await taskRepository.updateTask(task)
+            filterAndSearchTasks()
+        } catch {
+            
+        }
+        
     }
 
-    func deleteTask(task: TaskEntity) {
-        taskRepository.deleteTask(task)
-        filterAndSearchTasks()
+    func deleteTask(task: TaskEntity) async {
+        do {
+            try await taskRepository.deleteTask(task)
+            filterAndSearchTasks()
+        } catch {
+            
+        }
     }
     
     func filterAndSearchTasks() {

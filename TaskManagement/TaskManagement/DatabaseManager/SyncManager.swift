@@ -5,48 +5,57 @@
 //  Created by Dwi Randy H on 19/09/24.
 //
 
-import CoreData
+@preconcurrency import CoreData
 import Foundation
 import FirebaseFirestore
 
-class SyncManager {
+actor SyncManager {
     
-    let firestore = Firestore.firestore()
-    let persistentContainer: PersistenceContainer
+    private let firestore: Firestore
+    private let persistentContainer: PersistenceContainer
+    private var activeSyncTask: Task<Void, Error>?
+    private let logger: Logger
     
-    static var shared: SyncManager?
+    static var shared: SyncManager = .init(persistentContainer: .shared)
     
-    init(persistentContainer: PersistenceContainer) {
+    private init(persistentContainer: PersistenceContainer) {
         self.persistentContainer = persistentContainer
-        
-        
-        if SyncManager.shared == nil {
-            SyncManager.shared = self
-        }
+        self.firestore = Firestore.firestore()
+        self.logger = .init(category: "SyncManager")
     }
     
     func syncFirestoreToCoreData() async throws {
-        try await pushCoreDataToFirestore()
+        if activeSyncTask != nil {
+            try await activeSyncTask?.value
+        }
         
-        let snapshot = try await firestore.collection("tasks").getDocuments()
-        let documents = snapshot.documents
-        for document in documents {
-            guard let taskId = UUID(uuidString: document.documentID) else { continue }
-            let data = document.data()
-            let firestoreLastModified = (data["lastModified"] as? Timestamp)?.dateValue() ?? Date()
+        let task = Task<Void, Error> {
+            try await pushCoreDataToFirestore()
             
-            if let localTask = try await fetchTaskModel(byId: taskId) {
-                if let localLastModified = localTask.lastModified {
-                    if firestoreLastModified > localLastModified {
-                        try await self.updateCoreDataTask(from: data, for: localTask)
-                    } else if firestoreLastModified < localLastModified {
-                        self.savePendingSync(taskId: localTask.id!, actionType: "update")
+            let snapshot = try await firestore.collection("tasks").getDocuments()
+            let documents = snapshot.documents
+            for document in documents {
+                guard let taskId = UUID(uuidString: document.documentID) else { continue }
+                let data = document.data()
+                let firestoreLastModified = (data["lastModified"] as? Timestamp)?.dateValue() ?? Date()
+                
+                if let localTask = try await fetchTaskModel(byId: taskId) {
+                    if let localLastModified = localTask.lastModified {
+                        if firestoreLastModified > localLastModified {
+                            try await self.updateCoreDataTask(from: data, for: localTask)
+                        } else if firestoreLastModified < localLastModified {
+                            try await self.savePendingSync(taskId: localTask.id!, actionType: "update")
+                        }
                     }
+                } else {
+                    await self.createNewCoreDataTask(from: document)
                 }
-            } else {
-                self.createNewCoreDataTask(from: document)
             }
         }
+        
+        activeSyncTask = task
+        
+        try await task.value
     }
     
     func pushCoreDataToFirestore() async throws {
@@ -64,7 +73,7 @@ class SyncManager {
                 }
             }
         } catch {
-            print("Error fetching PendingSync: \(error)")
+            logger.error("Error fetching PendingSync: \(error)")
         }
     }
     
@@ -84,16 +93,15 @@ class SyncManager {
         await persistentContainer.update(localTask)
     }
     
-    private func createNewCoreDataTask(from document: QueryDocumentSnapshot) {
+    private func createNewCoreDataTask(from document: QueryDocumentSnapshot) async {
         let firestoreData = document.data()
         
-        let newTask = persistentContainer.create(TaskModel.self)
-        newTask.id = UUID(uuidString: document.documentID) ?? UUID()
-        newTask.title = firestoreData["title"] as? String
-        newTask.isCompleted = firestoreData["isCompleted"] as? Bool ?? false
-        newTask.lastModified = (firestoreData["lastModified"] as? Timestamp)?.dateValue()
-        
-        persistentContainer.saveContext()
+        await persistentContainer.create(TaskModel.self) { newTask in
+            newTask.id = UUID(uuidString: document.documentID)!
+            newTask.title = firestoreData["title"] as? String
+            newTask.isCompleted = firestoreData["isCompleted"] as? Bool ?? false
+            newTask.lastModified = (firestoreData["lastModified"] as? Timestamp)?.dateValue()
+        }
     }
     
     private func pushTaskToFirestore(task: TaskModel) async throws {
@@ -126,6 +134,22 @@ class SyncManager {
             let pendingSync = persistentContainer.create(PendingSyncModel.self)
             pendingSync.taskId = taskId
             pendingSync.actionType = actionType
+            persistentContainer.saveContext()
+        }
+    }
+    
+    func savePendingSync(taskId: UUID, actionType: String) async throws {
+        let predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
+            NSPredicate(format: "%K == %@", #keyPath(PendingSyncModel.taskId), taskId as CVarArg),
+            NSPredicate(format: "%K == %@", #keyPath(PendingSyncModel.actionType), actionType)
+        ])
+        
+        let result = try await persistentContainer.fetch(PendingSyncModel.self, predicate: predicate)
+        if result.isEmpty {
+            await persistentContainer.create(PendingSyncModel.self) { pendingSync in
+                pendingSync.taskId = taskId
+                pendingSync.actionType = actionType
+            }
         }
     }
     

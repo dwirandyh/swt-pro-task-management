@@ -9,26 +9,26 @@ import SwiftUI
 
 struct TaskListView: View {
     @StateObject var viewModel: TaskListViewModel
+    
+    let logger: Logger = .init(category: "View")
 
     var body: some View {
         NavigationView {
             VStack {
-                Picker("Filter", selection: $viewModel.filterOption) {
-                    Text("All").tag(FilterOption.all)
-                    Text("Completed").tag(FilterOption.completed)
-                    Text("Not Completed").tag(FilterOption.notCompleted)
-                }
-                .pickerStyle(SegmentedPickerStyle())
-                .padding()
+                statusPicker()
                 
                 SearchBar(text: $viewModel.searchText)
                 
                 List {
                     ForEach(viewModel.tasks) { task in
                         TaskRow(task: task, onUpdate: { updatedTask in
-                            viewModel.updateTask(task: updatedTask)
+                            Task {
+                                await viewModel.updateTask(task: updatedTask)
+                            }
                         }, onDelete: {
-                            viewModel.deleteTask(task: task)
+                            Task {
+                                await viewModel.deleteTask(task: task)
+                            }
                         })
                     }
                 }
@@ -41,7 +41,9 @@ struct TaskListView: View {
             }
             .sheet(isPresented: $viewModel.isAddTaskShown) {
                 AddTaskView { title in
-                    viewModel.addTask(title: title)
+                    Task {
+                        await viewModel.addTask(title: title)
+                    }
                 }
             }
             .task {
@@ -49,10 +51,21 @@ struct TaskListView: View {
                     try await viewModel.syncData()
                 }
                 catch {
-                    print("Failed to sync data \(error)")
+                    logger.error("Failed to sync data \(error)")
                 }
             }
         }
+    }
+    
+    @ViewBuilder
+    private func statusPicker() -> some View {
+        Picker("Filter", selection: $viewModel.filterOption) {
+            Text("All").tag(FilterOption.all)
+            Text("Completed").tag(FilterOption.completed)
+            Text("Not Completed").tag(FilterOption.notCompleted)
+        }
+        .pickerStyle(SegmentedPickerStyle())
+        .padding()
     }
 }
 

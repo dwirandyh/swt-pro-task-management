@@ -8,6 +8,10 @@
 import Foundation
 import Network
 
+/*
+ There is a bug when running NWPathMonitor in simulator that cause wrong path status
+ https://forums.developer.apple.com/forums/thread/713330
+ */
 class NetworkMonitor {
     
     private let monitor = NWPathMonitor()

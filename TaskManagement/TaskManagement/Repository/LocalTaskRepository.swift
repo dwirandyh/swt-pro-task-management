@@ -26,34 +26,36 @@ class LocalTaskRepository: TaskRepository {
         return persistentContainer.fetch(TaskModel.self).map { TaskEntity(from: $0) }
     }
 
-    func addTask(_ task: TaskEntity) {
+    func addTask(_ task: TaskEntity) async throws {
         let newTaskEntity = persistentContainer.create(TaskModel.self)
         newTaskEntity.id = task.id
         newTaskEntity.title = task.title
         newTaskEntity.isCompleted = false
         newTaskEntity.lastModified = Date()
         
-        syncManager.savePendingSync(taskId: task.id, actionType: "create")
-        
         persistentContainer.saveContext()
+        
+        try await syncManager.savePendingSync(taskId: task.id, actionType: "create")
     }
 
-    func updateTask(_ task: TaskEntity) {
+    func updateTask(_ task: TaskEntity) async throws {
         guard let taskModel = fetchTaskModel(byId: task.id) else { return }
         taskModel.isCompleted = task.isCompleted
         taskModel.lastModified = Date()
         
-        syncManager.savePendingSync(taskId: task.id, actionType: "update")
         
-        persistentContainer.update(taskModel)
+        await persistentContainer.update(taskModel)
+        
+        try await syncManager.savePendingSync(taskId: task.id, actionType: "update")
     }
 
-    func deleteTask(_ task: TaskEntity) {
+    func deleteTask(_ task: TaskEntity) async throws {
         guard let taskModel = fetchTaskModel(byId: task.id) else { return }
         
-        syncManager.savePendingSync(taskId: task.id, actionType: "delete")
         
-        persistentContainer.delete(taskModel)
+        await persistentContainer.delete(taskModel)
+        
+        try await syncManager.savePendingSync(taskId: task.id, actionType: "delete")
     }
     
     func searchTasks(byTitle title: String, filter: FilterOption) -> [TaskEntity] {

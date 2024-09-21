@@ -25,7 +25,7 @@ struct TaskManagementApp: App {
                 viewModel: TaskListViewModel(
                     taskRepository: LocalTaskRepository(
                         persistentContainer: PersistenceContainer.shared,
-                        syncManager: SyncManager(persistentContainer: PersistenceContainer.shared)
+                        syncManager: SyncManager.shared
                     )
                 )
             )

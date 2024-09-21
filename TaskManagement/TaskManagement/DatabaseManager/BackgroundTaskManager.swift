@@ -10,8 +10,12 @@ import UIKit
 
 class BackgroundTaskManager: ObservableObject {
     var backgroundTask: UIBackgroundTaskIdentifier = .invalid
+    let logger: Logger
     
-
+    init() {
+        self.logger = .init(category: "BackgroundTaskManager")
+    }
+    
     func startBackgroundTask() {
         backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "SyncTask") {
             self.endBackgroundTask()
@@ -20,9 +24,9 @@ class BackgroundTaskManager: ObservableObject {
         if backgroundTask != .invalid {
             Task(priority: .background) {
                 do {
-                    try await SyncManager.shared?.pushCoreDataToFirestore()
+                    try await SyncManager.shared.pushCoreDataToFirestore()
                 } catch {
-                    print("Failed to sync Firestore to CoreData: \(error.localizedDescription)")
+                    logger.error("Failed to sync Firestore to CoreData: \(error.localizedDescription)")
                 }
                 
                 self.endBackgroundTask()

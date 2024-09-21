@@ -24,7 +24,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         networkMonitor.setOnNetworkStatusChanged { isConnected in
             if isConnected {
                 Task {
-                    try await SyncManager.shared?.syncFirestoreToCoreData()
+                    try await SyncManager.shared.syncFirestoreToCoreData()
                 }
             }
         }
