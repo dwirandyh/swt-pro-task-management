@@ -17,6 +17,7 @@ struct AddTaskView: View {
             Form {
                 Section(header: Text("New Task")) {
                     TextField("Task Title", text: $title)
+                        .tag("textfield-task-title")
                 }
                 
                 Button("Add Task") {
@@ -25,11 +26,17 @@ struct AddTaskView: View {
                         dismissAction()
                     }
                 }
+                .tag("button-add-task")
             }
             .navigationBarTitle("Add Task")
-            .navigationBarItems(trailing: Button("Cancel") {
-                dismissAction()
-            })
+            .navigationBarItems(
+                trailing: Button(
+                    "Cancel"
+                ) {
+                    dismissAction()
+                }
+                .tag("button-cancel")
+            )
         }
     }
 }

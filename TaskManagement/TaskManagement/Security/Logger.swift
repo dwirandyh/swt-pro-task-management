@@ -15,19 +15,7 @@ class Logger {
         self.logger = OSLog(subsystem: subsystem, category: category)
     }
 
-    func debug(_ message: String) {
-        os_log("%@", log: logger, type: .debug, String(format: message))
-    }
-
-    func info(_ message: String) {
-        os_log("%@", log: logger, type: .info, String(format: message))
-    }
-
     func error(_ message: String) {
         os_log("%@", log: logger, type: .error, String(format: message))
-    }
-
-    func fault(_ message: String) {
-        os_log("%@", log: logger, type: .fault, String(format: message))
     }
 }

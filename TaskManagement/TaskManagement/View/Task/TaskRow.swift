@@ -31,6 +31,7 @@ struct TaskRow: View {
                 Image(systemName: "trash")
             }
             .buttonStyle(.borderless)
+            .tag("button-delete")
         }
     }
 }
