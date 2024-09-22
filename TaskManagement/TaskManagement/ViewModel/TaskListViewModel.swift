@@ -16,7 +16,7 @@ enum FilterOption {
 
 @MainActor
 class TaskListViewModel: ObservableObject {
-    @Published private(set) var tasks: [TaskEntity] = []
+    @Published var tasks: [TaskEntity] = []
     @Published var searchText: String = "" {
         didSet {
             filterAndSearchTasks()

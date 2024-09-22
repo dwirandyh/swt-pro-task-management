@@ -17,8 +17,10 @@ struct TaskListView: View {
             VStack {
                 if viewModel.isUnlocked {
                     taskList()
+                        .tag("taskList")
                 } else {
                     lockedView()
+                        .tag("lockedView")
                 }
             }
             .alert(viewModel.error ?? "Oops! Something went wrong. Please try again.", isPresented: $viewModel.error.isNotNil()) {
