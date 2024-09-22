@@ -13,17 +13,37 @@ import XCTest
 class TaskListViewModelTests: XCTestCase {
     var viewModel: TaskListViewModel!
     var mockRepository: MockTaskRepository!
+    var mockAuthManager: MockBiometricAuthManager!
     
     override func setUp() {
         super.setUp()
         mockRepository = MockTaskRepository()
-        viewModel = TaskListViewModel(taskRepository: mockRepository)
+        mockAuthManager = MockBiometricAuthManager()
+        viewModel = TaskListViewModel(taskRepository: mockRepository, authManager: mockAuthManager)
     }
     
     override func tearDown() {
         viewModel = nil
         mockRepository = nil
         super.tearDown()
+    }
+    
+    func testAuthenticationSuccess() async {
+        mockAuthManager.shouldSucceed = true
+        
+        await viewModel.authenticateUser()
+        
+        XCTAssertTrue(mockAuthManager.authenticateUserCalled)
+        XCTAssertTrue(viewModel.isUnlocked)
+    }
+    
+    func testAuthenticationFailure() async {
+        mockAuthManager.shouldSucceed = false
+        
+        await viewModel.authenticateUser()
+        
+        XCTAssertTrue(mockAuthManager.authenticateUserCalled)
+        XCTAssertFalse(viewModel.isUnlocked)
     }
     
     func testSyncData() async throws {

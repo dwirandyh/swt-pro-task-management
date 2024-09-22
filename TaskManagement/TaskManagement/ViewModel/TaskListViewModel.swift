@@ -29,14 +29,22 @@ class TaskListViewModel: ObservableObject {
     }
     @Published var isAddTaskShown: Bool = false
     @Published var error: String?
+    @Published var isUnlocked = false
 
     private let taskRepository: TaskRepository
+    private let authManager: AuthManager
     private let logger: Logger
     
-    init(taskRepository: TaskRepository, logger: Logger = Logger()) {
+    init(taskRepository: TaskRepository, authManager: AuthManager, logger: Logger = Logger()) {
         self.taskRepository = taskRepository
         self.logger = logger
+        self.authManager = authManager
         filterAndSearchTasks()
+    }
+    
+    func authenticateUser() async {
+        let isAuthenticated = await authManager.authenticateUser()
+        isUnlocked = isAuthenticated
     }
     
     func syncData() async throws {

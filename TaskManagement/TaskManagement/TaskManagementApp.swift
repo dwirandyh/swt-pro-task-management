@@ -26,7 +26,8 @@ struct TaskManagementApp: App {
                     taskRepository: LocalTaskRepository(
                         persistentContainer: PersistenceContainer.shared,
                         syncManager: SyncManager.shared
-                    )
+                    ),
+                    authManager: BiometricAuthManager.shared
                 )
             )
         }

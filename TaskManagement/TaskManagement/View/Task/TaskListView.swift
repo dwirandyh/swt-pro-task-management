@@ -15,35 +15,10 @@ struct TaskListView: View {
     var body: some View {
         NavigationView {
             VStack {
-                statusPicker()
-                
-                SearchBar(text: $viewModel.searchText)
-                
-                List {
-                    ForEach(viewModel.tasks) { task in
-                        TaskRow(task: task, onUpdate: { updatedTask in
-                            Task {
-                                await viewModel.updateTask(task: updatedTask)
-                            }
-                        }, onDelete: {
-                            Task {
-                                await viewModel.deleteTask(task: task)
-                            }
-                        })
-                    }
-                }
-                .navigationBarTitle("Tasks")
-                .navigationBarItems(trailing: Button(action: {
-                    viewModel.isAddTaskShown = true
-                }) {
-                    Image(systemName: "plus")
-                })
-            }
-            .sheet(isPresented: $viewModel.isAddTaskShown) {
-                AddTaskView { title in
-                    Task {
-                        await viewModel.addTask(title: title)
-                    }
+                if viewModel.isUnlocked {
+                    taskList()
+                } else {
+                    lockedView()
                 }
             }
             .alert(viewModel.error ?? "Oops! Something went wrong. Please try again.", isPresented: $viewModel.error.isNotNil()) {
@@ -61,6 +36,40 @@ struct TaskListView: View {
     }
     
     @ViewBuilder
+    private func taskList() -> some View {
+        statusPicker()
+        
+        SearchBar(text: $viewModel.searchText)
+        
+        List {
+            ForEach(viewModel.tasks) { task in
+                TaskRow(task: task, onUpdate: { updatedTask in
+                    Task {
+                        await viewModel.updateTask(task: updatedTask)
+                    }
+                }, onDelete: {
+                    Task {
+                        await viewModel.deleteTask(task: task)
+                    }
+                })
+            }
+        }
+        .sheet(isPresented: $viewModel.isAddTaskShown) {
+            AddTaskView { title in
+                Task {
+                    await viewModel.addTask(title: title)
+                }
+            }
+        }
+        .navigationBarTitle("Tasks")
+        .navigationBarItems(trailing: Button(action: {
+            viewModel.isAddTaskShown = true
+        }) {
+            Image(systemName: "plus")
+        })
+    }
+    
+    @ViewBuilder
     private func statusPicker() -> some View {
         Picker("Filter", selection: $viewModel.filterOption) {
             Text("All").tag(FilterOption.all)
@@ -70,9 +79,22 @@ struct TaskListView: View {
         .pickerStyle(SegmentedPickerStyle())
         .padding()
     }
+    
+    @ViewBuilder
+    private func lockedView() -> some View {
+        VStack {
+            Text("Task Management")
+                .font(.largeTitle)
+            Button("Unlock with Face ID") {
+                Task {
+                    await viewModel.authenticateUser()
+                }
+            }
+        }
+    }
 }
 
 
 #Preview {
-    TaskListView(viewModel: TaskListViewModel(taskRepository: InMemoryTaskRepository()))
+    TaskListView(viewModel: TaskListViewModel(taskRepository: InMemoryTaskRepository(), authManager: BiometricAuthManager.shared))
 }
