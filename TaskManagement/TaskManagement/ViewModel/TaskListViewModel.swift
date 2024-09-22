@@ -28,13 +28,14 @@ class TaskListViewModel: ObservableObject {
         }
     }
     @Published var isAddTaskShown: Bool = false
+    @Published var error: String?
 
     private let taskRepository: TaskRepository
     private let logger: Logger
     
-    init(taskRepository: TaskRepository) {
+    init(taskRepository: TaskRepository, logger: Logger = Logger()) {
         self.taskRepository = taskRepository
-        self.logger = Logger()
+        self.logger = logger
         filterAndSearchTasks()
     }
     
@@ -54,6 +55,7 @@ class TaskListViewModel: ObservableObject {
             try await taskRepository.addTask(newTask)
             filterAndSearchTasks()
         } catch {
+            self.error = "Failed to add task"
             logger.error("Failed to add task \(error)")
         }
     }
@@ -63,6 +65,7 @@ class TaskListViewModel: ObservableObject {
             try await taskRepository.updateTask(task)
             filterAndSearchTasks()
         } catch {
+            self.error = "Failed to update task"
             logger.error("Failed to update task \(error)")
         }
     }
@@ -72,6 +75,7 @@ class TaskListViewModel: ObservableObject {
             try await taskRepository.deleteTask(task)
             filterAndSearchTasks()
         } catch {
+            self.error = "Failed to delete task"
             logger.error("Failed to delete task \(error)")
         }
     }

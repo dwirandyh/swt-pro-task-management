@@ -15,7 +15,12 @@ class MockTaskRepository: TaskRepository {
     var updateTaskCalled = false
     var deleteTaskCalled = false
     
+    var errorToThrow: Error?
+    
     func syncData() async throws {
+        if let error = errorToThrow {
+            throw error
+        }
         syncDataCalled = true
     }
     
@@ -24,11 +29,17 @@ class MockTaskRepository: TaskRepository {
     }
     
     func addTask(_ task: TaskEntity) async throws {
+        if let error = errorToThrow {
+            throw error
+        }
         addTaskCalled = true
         tasks.append(task)
     }
     
     func updateTask(_ task: TaskEntity) async throws {
+        if let error = errorToThrow {
+            throw error
+        }
         updateTaskCalled = true
         if let index = tasks.firstIndex(where: { $0.id == task.id }) {
             tasks[index] = task
@@ -36,6 +47,9 @@ class MockTaskRepository: TaskRepository {
     }
     
     func deleteTask(_ task: TaskEntity) async throws {
+        if let error = errorToThrow {
+            throw error
+        }
         deleteTaskCalled = true
         tasks.removeAll { $0.id == task.id }
     }

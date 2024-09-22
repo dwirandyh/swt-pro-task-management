@@ -31,11 +31,36 @@ class TaskListViewModelTests: XCTestCase {
         XCTAssertTrue(mockRepository.syncDataCalled)
     }
     
+    func testSyncDataError() async throws {
+        let expectation = expectation(description: "expect call to throw error when sync data")
+        var actualError: Error? = nil
+        mockRepository.errorToThrow = NSError(domain: "MockError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Mock error"])
+        
+        do {
+            try await viewModel.syncData()
+        } catch {
+            actualError = error
+            expectation.fulfill()
+        }
+        
+        await fulfillment(of: [expectation])
+        XCTAssertEqual(actualError?.localizedDescription, "Mock error")
+    }
+
+    
     func testAddTask() async {
         await viewModel.addTask(title: "Test Task")
         XCTAssertTrue(mockRepository.addTaskCalled)
         XCTAssertEqual(mockRepository.tasks.count, 1)
         XCTAssertEqual(mockRepository.tasks.first?.title, "Test Task")
+    }
+    
+    func testAddTaskError() async throws {
+        mockRepository.errorToThrow = NSError(domain: "MockError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Mock error"])
+        
+        await viewModel.addTask(title: "Task 1")
+        
+        XCTAssertNotNil(viewModel.error)
     }
     
     func testUpdateTask() async {
@@ -50,6 +75,15 @@ class TaskListViewModelTests: XCTestCase {
         XCTAssertTrue(mockRepository.tasks.first?.isCompleted ?? false)
     }
     
+    func testEditTaskError() async throws {
+        mockRepository.errorToThrow = NSError(domain: "MockError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Mock error"])
+        let task = TaskEntity(id: UUID(), title: "Test Task", isCompleted: false, lastModified: Date())
+
+        await viewModel.updateTask(task: task)
+        
+        XCTAssertNotNil(viewModel.error)
+    }
+    
     func testDeleteTask() async {
         let task = TaskEntity(id: UUID(), title: "Test Task", isCompleted: false, lastModified: Date())
         mockRepository.tasks = [task]
@@ -57,6 +91,15 @@ class TaskListViewModelTests: XCTestCase {
         await viewModel.deleteTask(task: task)
         XCTAssertTrue(mockRepository.deleteTaskCalled)
         XCTAssertTrue(mockRepository.tasks.isEmpty)
+    }
+    
+    func testDeleteTaskError() async throws {
+        mockRepository.errorToThrow = NSError(domain: "MockError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Mock error"])
+        let task = TaskEntity(id: UUID(), title: "Test Task", isCompleted: false, lastModified: Date())
+
+        await viewModel.deleteTask(task: task)
+        
+        XCTAssertNotNil(viewModel.error)
     }
     
     func testFilterAndSearchTasks() {

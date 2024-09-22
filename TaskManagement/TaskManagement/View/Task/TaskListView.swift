@@ -46,6 +46,9 @@ struct TaskListView: View {
                     }
                 }
             }
+            .alert(viewModel.error ?? "Oops! Something went wrong. Please try again.", isPresented: $viewModel.error.isNotNil()) {
+                Button("OK", role: .cancel) { }
+            }
             .task {
                 do {
                     try await viewModel.syncData()

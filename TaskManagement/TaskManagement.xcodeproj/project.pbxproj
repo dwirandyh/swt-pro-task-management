@@ -10,6 +10,7 @@
 		747CEA672C9BE82200214BC2 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 747CEA662C9BE82200214BC2 /* FirebaseAnalytics */; };
 		747CEA692C9BE82200214BC2 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 747CEA682C9BE82200214BC2 /* FirebaseAnalyticsWithoutAdIdSupport */; };
 		747CEA712C9BEA3E00214BC2 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 747CEA702C9BEA3E00214BC2 /* FirebaseFirestore */; };
+		7494D0CC2C9EDC5C00B4B086 /* ViewInspector in Frameworks */ = {isa = PBXBuildFile; productRef = 7494D0CB2C9EDC5C00B4B086 /* ViewInspector */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -25,6 +26,7 @@
 /* Begin PBXFileReference section */
 		747CE9FB2C9BCD2900214BC2 /* TaskManagement.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TaskManagement.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		747CEA0B2C9BCD2B00214BC2 /* TaskManagementTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TaskManagementTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7494D0CF2C9FE98700B4B086 /* TaskManagement.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = TaskManagement.xctestplan; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -55,6 +57,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7494D0CC2C9EDC5C00B4B086 /* ViewInspector in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -64,6 +67,7 @@
 		747CE9F22C9BCD2900214BC2 = {
 			isa = PBXGroup;
 			children = (
+				7494D0CF2C9FE98700B4B086 /* TaskManagement.xctestplan */,
 				747CE9FD2C9BCD2900214BC2 /* TaskManagement */,
 				747CEA0E2C9BCD2B00214BC2 /* TaskManagementTests */,
 				747CEA6F2C9BEA3E00214BC2 /* Frameworks */,
@@ -133,6 +137,7 @@
 			);
 			name = TaskManagementTests;
 			packageProductDependencies = (
+				7494D0CB2C9EDC5C00B4B086 /* ViewInspector */,
 			);
 			productName = TaskManagementTests;
 			productReference = 747CEA0B2C9BCD2B00214BC2 /* TaskManagementTests.xctest */;
@@ -168,6 +173,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				747CEA652C9BE80400214BC2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				74BEA3082C9EDB8B00C6BDF5 /* XCRemoteSwiftPackageReference "ViewInspector" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 747CE9FC2C9BCD2900214BC2 /* Products */;
@@ -481,6 +487,14 @@
 				version = 11.2.0;
 			};
 		};
+		74BEA3082C9EDB8B00C6BDF5 /* XCRemoteSwiftPackageReference "ViewInspector" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/nalexn/ViewInspector";
+			requirement = {
+				kind = exactVersion;
+				version = 0.10.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -498,6 +512,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 747CEA652C9BE80400214BC2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
+		};
+		7494D0CB2C9EDC5C00B4B086 /* ViewInspector */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 74BEA3082C9EDB8B00C6BDF5 /* XCRemoteSwiftPackageReference "ViewInspector" */;
+			productName = ViewInspector;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

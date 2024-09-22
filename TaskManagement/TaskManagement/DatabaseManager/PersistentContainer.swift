@@ -63,10 +63,6 @@ class PersistenceContainer {
         }
     }
     
-    func create<T: NSManagedObject>(_ type: T.Type) -> T {
-        return T(context: context)
-    }
-    
     @discardableResult
     func create<T: NSManagedObject>(_ type: T.Type, updatedObject: @escaping (T) -> Void) async -> T {
         return await context.perform {
