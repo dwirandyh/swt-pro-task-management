@@ -1,6 +1,12 @@
 # TaskManagement
 
-TaskManagement is a iOS application for managing tasks with local storage and cloud synchronization.
+TaskManagement is an iOS application for managing tasks with local storage and cloud synchronization.
+
+
+
+https://github.com/user-attachments/assets/986fccbf-cbf3-4026-940d-4bfc11433d63
+
+
 
 ## Getting Started
 
@@ -23,7 +29,7 @@ Key components:
 
 ## Key Design Decisions
 
-1. Use of Core Data for local storage instead of third party like realm (deprecated)
+1. Use of Core Data for local storage instead of third party like realm (deprecated) & increased app size 5 to 8 Mb [Docs](https://realm.netlify.app/docs/swift/latest/#faq)
 2. Implementation of a SyncManager to handle data synchronization between local storage and Firestore
 3. Adoption of the Repository pattern to abstract data operations and make the codebase testable
 4. Use of SwiftUI for user interface with built in property wrapper like @Published, @State, @Binding
@@ -32,9 +38,8 @@ Key components:
 
 ## Known Limitations and Future Improvements
 
-1. There is a known bug with NWPathMonitor in the simulator that causes incorrect path status in simulator
-2. Implement more robust error handling for sync operations
-3. Add support for task categories or tags
+1. There’s a known bug with NWPathMonitor in the simulator where it shows incorrect path status, like showing "satisfied" when disconnected and not showing "failed" when connected. It works fine on actual devices. [Source](https://forums.developer.apple.com/forums/thread/713330)
+2. Add support for widget & search from spotlight
 4. Improve test coverage, especially for edge cases
-5. Implement a more robust sync process incrementally
-6. Implement user authentication and multi-user support
+5. Implement a more robust sync process that can sync data incrementally
+6. Implement user authentication for multi-user support
