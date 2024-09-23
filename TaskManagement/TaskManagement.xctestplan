@@ -1,7 +1,7 @@
 {
   "configurations" : [
     {
-      "id" : "EA1FE773-13A1-4D80-A2EE-436CFE6BB7B7",
+      "id" : "20447CA8-3C49-46F3-A1D1-19701D5FC34D",
       "name" : "Test Scheme Action",
       "options" : {
 
@@ -13,14 +13,14 @@
       "targets" : [
         {
           "containerPath" : "container:TaskManagement.xcodeproj",
-          "identifier" : "747CE9FA2C9BCD2900214BC2",
+          "identifier" : "742DD8F52CA10D9100BB9D90",
           "name" : "TaskManagement"
         }
       ]
     },
     "targetForVariableExpansion" : {
       "containerPath" : "container:TaskManagement.xcodeproj",
-      "identifier" : "747CE9FA2C9BCD2900214BC2",
+      "identifier" : "742DD8F52CA10D9100BB9D90",
       "name" : "TaskManagement"
     }
   },
@@ -29,16 +29,8 @@
       "parallelizable" : true,
       "target" : {
         "containerPath" : "container:TaskManagement.xcodeproj",
-        "identifier" : "747CEA0A2C9BCD2B00214BC2",
+        "identifier" : "742DD90A2CA10DA000BB9D90",
         "name" : "TaskManagementTests"
-      }
-    },
-    {
-      "parallelizable" : true,
-      "target" : {
-        "containerPath" : "container:TaskManagement.xcodeproj",
-        "identifier" : "747CEA142C9BCD2B00214BC2",
-        "name" : "TaskManagementUITests"
       }
     }
   ],

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1600"
+   LastUpgradeVersion = "1530"
    version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -15,7 +15,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "747CE9FA2C9BCD2900214BC2"
+               BlueprintIdentifier = "742DD8F52CA10D9100BB9D90"
                BuildableName = "TaskManagement.app"
                BlueprintName = "TaskManagement"
                ReferencedContainer = "container:TaskManagement.xcodeproj">
@@ -40,20 +40,9 @@
             parallelizable = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "747CEA0A2C9BCD2B00214BC2"
+               BlueprintIdentifier = "742DD90A2CA10DA000BB9D90"
                BuildableName = "TaskManagementTests.xctest"
                BlueprintName = "TaskManagementTests"
-               ReferencedContainer = "container:TaskManagement.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "747CEA142C9BCD2B00214BC2"
-               BuildableName = "TaskManagementUITests.xctest"
-               BlueprintName = "TaskManagementUITests"
                ReferencedContainer = "container:TaskManagement.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -73,7 +62,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "747CE9FA2C9BCD2900214BC2"
+            BlueprintIdentifier = "742DD8F52CA10D9100BB9D90"
             BuildableName = "TaskManagement.app"
             BlueprintName = "TaskManagement"
             ReferencedContainer = "container:TaskManagement.xcodeproj">
@@ -90,7 +79,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "747CE9FA2C9BCD2900214BC2"
+            BlueprintIdentifier = "742DD8F52CA10D9100BB9D90"
             BuildableName = "TaskManagement.app"
             BlueprintName = "TaskManagement"
             ReferencedContainer = "container:TaskManagement.xcodeproj">

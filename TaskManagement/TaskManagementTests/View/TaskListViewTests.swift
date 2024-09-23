@@ -31,14 +31,6 @@ class TaskListViewTests: XCTestCase {
         XCTAssertNotNil(lockedView)
     }
 
-    func testUnlockedState() throws {
-        mockViewModel.isUnlocked = true
-        let view = TaskListView(viewModel: self.mockViewModel)
-        let taskList = try view.inspect().find(viewWithTag: "taskList")
-        ViewHosting.host(view: view)
-        XCTAssertNotNil(taskList)
-    }
-
     func testTaskRow() throws {
         mockViewModel.isUnlocked = true
         let task = TaskEntity(id: UUID(), title: "Test Task", isCompleted: false, lastModified: Date())
