@@ -34,7 +34,9 @@ Key components:
 3. Adoption of the Repository pattern to abstract data operations and make the codebase testable
 4. Use of SwiftUI for user interface with built in property wrapper like @Published, @State, @Binding
 5. Use modern Swift 5.5+ modern feature like Async/Await, Actor, Combine
-6. Unit testing with 77% coverage including with UI with [ViewInspector](https://github.com/nalexn/ViewInspector)
+6. Unit testing with 81% coverage including with UI with [ViewInspector](https://github.com/nalexn/ViewInspector)
+<img width="1130" alt="Screenshot 2024-09-23 at 10 10 15" src="https://github.com/user-attachments/assets/1b706650-3149-4da1-b6a4-1a7fcafc10ec">
+
 
 ## Known Limitations and Future Improvements
 
